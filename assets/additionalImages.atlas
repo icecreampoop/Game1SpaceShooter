@@ -1,0 +1,83 @@
+
+additionalImages.png
+size: 1024, 128
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+enemyBlue1
+  rotate: false
+  xy: 207, 37
+  size: 93, 84
+  orig: 93, 84
+  offset: 0, 0
+  index: -1
+enemyGreen2
+  rotate: false
+  xy: 2, 37
+  size: 104, 84
+  orig: 104, 84
+  offset: 0, 0
+  index: -1
+enemyRed5
+  rotate: false
+  xy: 108, 37
+  size: 97, 84
+  orig: 97, 84
+  offset: 0, 0
+  index: -1
+meteor
+  rotate: false
+  xy: 395, 39
+  size: 89, 82
+  orig: 89, 82
+  offset: 0, 0
+  index: -1
+meteorDamaged
+  rotate: false
+  xy: 486, 78
+  size: 43, 43
+  orig: 43, 43
+  offset: 0, 0
+  index: -1
+meteorDamagedMore
+  rotate: false
+  xy: 565, 106
+  size: 16, 15
+  orig: 16, 15
+  offset: 0, 0
+  index: -1
+powerupRed_bolt
+  rotate: false
+  xy: 2, 2
+  size: 34, 33
+  orig: 34, 33
+  offset: 0, 0
+  index: -1
+powerupRed_shield
+  rotate: false
+  xy: 486, 43
+  size: 34, 33
+  orig: 34, 33
+  offset: 0, 0
+  index: -1
+star_bronze
+  rotate: false
+  xy: 38, 5
+  size: 31, 30
+  orig: 31, 30
+  offset: 0, 0
+  index: -1
+things_bronze
+  rotate: false
+  xy: 531, 89
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+ufoFirstBoss
+  rotate: false
+  xy: 302, 30
+  size: 91, 91
+  orig: 91, 91
+  offset: 0, 0
+  index: -1
