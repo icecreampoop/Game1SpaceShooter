@@ -284,29 +284,12 @@ class GameScreen implements Screen {
     }
 
     private void detectInput(float deltaTime) {
-        //keyboard input
-
-        //strategy: determine the max distance the ship can move
-        //check each key that matters and move accordingly
 
         float leftLimit,rightLimit,upLimit,downLimit;
         leftLimit = -playerShip.boundingBox.x;
         downLimit = -playerShip.boundingBox.y;
         rightLimit = WORLD_WIDTH - playerShip.boundingBox.x - playerShip.boundingBox.width;
         upLimit = (float)WORLD_HEIGHT/2 - playerShip.boundingBox.y - playerShip.boundingBox.height;
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit > 0) {
-            playerShip.translate(Math.min(playerShip.movementSpeed*deltaTime, rightLimit), 0f);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP) && upLimit > 0) {
-            playerShip.translate(0f,Math.min(playerShip.movementSpeed*deltaTime, upLimit));
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit < 0) {
-            playerShip.translate(Math.max(-playerShip.movementSpeed*deltaTime, leftLimit), 0f);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && downLimit < 0) {
-            playerShip.translate(0f,Math.max(-playerShip.movementSpeed*deltaTime, downLimit));
-        }
 
         //touch input (also mouse)
         if (Gdx.input.isTouched()){
@@ -340,6 +323,20 @@ class GameScreen implements Screen {
                 playerShip.translate(xMove,yMove);
             }
 
+        } else {
+            //keyboard input
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit > 0) {
+                playerShip.translate(Math.min(playerShip.movementSpeed * deltaTime, rightLimit), 0f);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.UP) && upLimit > 0) {
+                playerShip.translate(0f, Math.min(playerShip.movementSpeed * deltaTime, upLimit));
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit < 0) {
+                playerShip.translate(Math.max(-playerShip.movementSpeed * deltaTime, leftLimit), 0f);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && downLimit < 0) {
+                playerShip.translate(0f, Math.max(-playerShip.movementSpeed * deltaTime, downLimit));
+            }
         }
 
     }
@@ -492,10 +489,10 @@ class GameScreen implements Screen {
     private void renderBackground(float deltaTime) {
 
         //update position of background images
-        backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed/8;
-        backgroundOffsets[1] += deltaTime * backgroundMaxScrollingSpeed/4;
-        backgroundOffsets[2] += deltaTime * backgroundMaxScrollingSpeed/2;
-        backgroundOffsets[3] += deltaTime * backgroundMaxScrollingSpeed;
+        backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed/16+gameTime/1224;
+        backgroundOffsets[1] += deltaTime * backgroundMaxScrollingSpeed/8+gameTime/648;
+        backgroundOffsets[2] += deltaTime * backgroundMaxScrollingSpeed/4+gameTime/342;
+        backgroundOffsets[3] += deltaTime * backgroundMaxScrollingSpeed/2+gameTime/180;
 
         //draw each background layer
         for (int layer = 0; layer < backgroundOffsets.length; layer++) {
