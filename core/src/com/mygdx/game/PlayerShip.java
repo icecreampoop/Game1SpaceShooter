@@ -14,6 +14,10 @@ class PlayerShip extends Ship{
         playerPowerLevel++;
     }
 
+    public float getPlayerPowerLevel() {
+        return playerPowerLevel;
+    }
+
     public void restoreShieldToTen() {
         shield = 10;
     }
