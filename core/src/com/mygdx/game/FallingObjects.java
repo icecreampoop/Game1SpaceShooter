@@ -6,8 +6,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
 class FallingObjects {
-    float additionalLaserPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(45,90);
-    float timeSinceAdditionalLaserPowerUp = 0;
+    float additionalLaserPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(180,210);
+    float laserFireRatePowerUpFrequency = SpaceShooterTestGame1.random.nextInt(60,75);
+    float playerShieldRecoveryPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(60,90);
+    float timeSinceAdditionalLaserPowerUp = 0, timeSinceLaserFireRatePowerUp = 0,
+            timeSinceShieldRecoveryPowerUp = 0;
     float fallingSpeed = 40f;
     float timeSinceLastMeteor = 0;
     float meteorFrequency = SpaceShooterTestGame1.random.nextFloat(0,5);
@@ -15,7 +18,9 @@ class FallingObjects {
     TextureRegion bigMeteor;
     Texture powerUpMeteor;
     Rectangle boundingBox;
-    boolean firstTimeAdditionalLaserPowerUpGuaranteedSpawn = true, powerUpTransitionDone = false;
+    boolean firstTimeAdditionalLaserPowerUpGuaranteedSpawn = true, powerUpTransitionDone = false,
+            firstTimeLaserFireRatePowerUpGuaranteedSpawn = true,
+            firstTimeShieldRecoveryPowerUpGuaranteedSpawn = true;
 
     static class FallingMeteors {
         TextureRegion damagedMeteor;
@@ -102,33 +107,53 @@ class FallingObjects {
 //        }
 //    }
 
-//    static class LaserFireRatePowerUp {
-//        float width, height = 8;
-//        FallingObjects outerMeteor = new FallingObjects();
-//
-//        public void draw(Batch batch) {
-//            if (outerMeteor.fallingMeteorHP > 2) {
-//                //big meteor
-//                batch.draw(outerMeteor.bigMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
-//            } else if (outerMeteor.fallingMeteorHP > 0) {
-//                //small meteor
-//                batch.draw(damagedMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
-//            }
-//        }
-//    }
-//
-//    static class RestorePlayerShieldToFull {
-//        float width, height = 8;
-//        FallingObjects outerMeteor = new FallingObjects();
-//
-//        public void draw(Batch batch) {
-//            if (outerMeteor.fallingMeteorHP > 2) {
-//                //big meteor
-//                batch.draw(outerMeteor.bigMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
-//            } else if (outerMeteor.fallingMeteorHP > 0) {
-//                //small meteor
-//                batch.draw(damagedMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
-//            }
-//        }
-//    }
+    static class LaserFireRatePowerUp {
+        float width = 12, height = 12;
+        TextureRegion laserFireRatePowerUpIcon;
+        FallingObjects outerMeteor = new FallingObjects();
+
+        public LaserFireRatePowerUp (Texture bigMeteor, TextureRegion laserFireRatePowerUpIcon, float xPosition, float yPosition) {
+            this.outerMeteor.powerUpMeteor = bigMeteor;
+            this.laserFireRatePowerUpIcon = laserFireRatePowerUpIcon;
+            this.outerMeteor.boundingBox = new Rectangle(xPosition-width/2,yPosition-height/2,width,height);
+        }
+
+        public void checkIfMeteorDamaged() {
+            if (outerMeteor.fallingMeteorHP < 3) {
+                if (!outerMeteor.powerUpTransitionDone) {
+                    outerMeteor.boundingBox.x = outerMeteor.boundingBox.x + outerMeteor.boundingBox.width / 4;
+                    outerMeteor.boundingBox.y = outerMeteor.boundingBox.y + outerMeteor.boundingBox.height / 4;
+                    outerMeteor.boundingBox.width = 6;
+                    outerMeteor.boundingBox.height = 6;
+                    outerMeteor.powerUpTransitionDone = true;
+                }
+            }
+        }
+
+        public void draw(Batch batch) {
+            if (outerMeteor.fallingMeteorHP > 2) {
+                //meteor shell with inner power up
+                batch.draw(outerMeteor.powerUpMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
+                batch.draw(laserFireRatePowerUpIcon,outerMeteor.boundingBox.x + outerMeteor.boundingBox.width/4,outerMeteor.boundingBox.y + outerMeteor.boundingBox.height/4,6,6);
+            } else {
+                //inner power up
+                batch.draw(laserFireRatePowerUpIcon,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
+            }
+        }
+    }
+
+    static class PlayerShieldRecovery {
+        float width = 6, height = 6;
+        FallingObjects outerMeteor = new FallingObjects();
+
+        public PlayerShieldRecovery(TextureRegion playerShieldRestoreTextureRegion, float xPosition, float yPosition) {
+            this.outerMeteor.bigMeteor = playerShieldRestoreTextureRegion;
+            this.outerMeteor.boundingBox = new Rectangle(xPosition-width/2,yPosition-height/2,width,height);
+        }
+
+        public void draw(Batch batch) {
+            //meteor shell with inner power up
+            batch.draw(outerMeteor.bigMeteor,outerMeteor.boundingBox.x,outerMeteor.boundingBox.y,outerMeteor.boundingBox.width,outerMeteor.boundingBox.height);
+        }
+    }
 }

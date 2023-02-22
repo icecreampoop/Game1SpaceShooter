@@ -43,8 +43,8 @@ class GameScreen implements Screen {
     private float[] backgroundOffsets = {0,0,0,0};
     private float backgroundMaxScrollingSpeed;
     private float timeBetweenEnemySpawns = 4f;
-    private float difficultyAddition = 0.5f, difficultyAdditionThreshold = 45f, difficultyAdditionTimer = 0;
-    private float difficultySpawnMultiplier = 2, difficultySpawnThreshold = 45f, difficultySpawnTimer = 0;
+    private float difficultyAddition = 0.2f, difficultyAdditionThreshold = 45f, difficultyAdditionTimer = 0;
+    private float difficultySpawnMultiplier = 2, difficultySpawnThreshold = 120f, difficultySpawnTimer = 0;
     private boolean gameStartFirstSpawn = true;
     private float enemySpawnTimer = 0;
     private float gameTime = 0;
@@ -57,11 +57,11 @@ class GameScreen implements Screen {
     //game objects
     private PlayerShip playerShip;
     private FallingObjects fallingObjects;
-    private LinkedList<FallingObjects.FallingMeteors> fallingMeteorsLinkedList;
+    private LinkedList <FallingObjects.FallingMeteors> fallingMeteorsLinkedList;
     private LinkedList <FallingObjects.AdditionalLaserPowerUp> additionalLaserPowerUp;
 //    private FallingObjects.PlayerMovementSpeedIncrease playerMovementSpeedIncrease;
-//    private FallingObjects.LaserFireRatePowerUp laserFireRatePowerUp;
-//    private FallingObjects.RestorePlayerShieldToFull restorePlayerShieldToFull;
+    private LinkedList <FallingObjects.LaserFireRatePowerUp> laserFireRatePowerUp;
+    private LinkedList <FallingObjects.PlayerShieldRecovery> playerShieldRecoveryPowerUp;
 
     private LinkedList<EnemyShip> enemyShipList;
     private LinkedList<Laser> playerLaserList;
@@ -110,16 +110,16 @@ class GameScreen implements Screen {
         fallingMeteorSpecialPowerUpTextureRegion = new Texture("meteorGrey_big3.png");
         fallingMeteorsLinkedList = new LinkedList<>();
         additionalLaserPowerUp = new LinkedList<>();
-//        playerMovementSpeedIncrease = new FallingObjects.PlayerMovementSpeedIncrease();
-//        laserFireRatePowerUp = new FallingObjects.LaserFireRatePowerUp();
-//        restorePlayerShieldToFull = new FallingObjects.RestorePlayerShieldToFull();
+//        playerMovementSpeedIncrease = new LinkedList<>();
+        laserFireRatePowerUp = new LinkedList<>();
+        playerShieldRecoveryPowerUp = new LinkedList<>();
         fallingObjects = new FallingObjects();
 
 
         explosionTexture = new Texture("explosion.png");
 
         //set up game objects
-        playerShip = new PlayerShip(48,10,WORLD_WIDTH/2,WORLD_HEIGHT/4,5,5,0.6f,4,150,
+        playerShip = new PlayerShip(48,5,WORLD_WIDTH/2,WORLD_HEIGHT/4,5,5,0.6f,4,150,
                 0.8f,playerShipTextureRegion,playerShieldTextureRegion,playerLaserTextureRegion);
         enemyShipList = new LinkedList<>();
 
@@ -223,7 +223,7 @@ class GameScreen implements Screen {
             }
         }
 
-        if (gameTime > 30) {
+        if (gameTime > 180) {
             fallingObjects.timeSinceAdditionalLaserPowerUp += deltaTime;
             if (fallingObjects.firstTimeAdditionalLaserPowerUpGuaranteedSpawn) {
                 fallingObjects.firstTimeAdditionalLaserPowerUpGuaranteedSpawn = false;
@@ -231,11 +231,11 @@ class GameScreen implements Screen {
                         SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
             }
 
-            if (fallingObjects.timeSinceAdditionalLaserPowerUp > fallingObjects.additionalLaserPowerUpFrequency && playerShip.getPlayerPowerLevel() < 3) {
+            if (fallingObjects.timeSinceAdditionalLaserPowerUp > fallingObjects.additionalLaserPowerUpFrequency && playerShip.getPlayerPowerLevel() < 2) {
                 additionalLaserPowerUp.add(new FallingObjects.AdditionalLaserPowerUp(fallingMeteorSpecialPowerUpTextureRegion,additionalLaserIconTextureRegion,
                         SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
                 fallingObjects.timeSinceAdditionalLaserPowerUp -= fallingObjects.additionalLaserPowerUpFrequency;
-                fallingObjects.additionalLaserPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(45,90);
+                fallingObjects.additionalLaserPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(180,210);
             }
 
             ListIterator<FallingObjects.AdditionalLaserPowerUp> additionalLaserPowerUpListIterator = additionalLaserPowerUp.listIterator();
@@ -249,13 +249,57 @@ class GameScreen implements Screen {
             }
         }
 
-//        if () {
-//            playerShip.increaseFireRate();
-//        }
-//        if () {
-//            playerShip.restoreShieldToTen();
-//        }
-//        if () {
+        if (gameTime > 30) {
+            fallingObjects.timeSinceLaserFireRatePowerUp += deltaTime;
+            if (fallingObjects.firstTimeLaserFireRatePowerUpGuaranteedSpawn) {
+                fallingObjects.firstTimeLaserFireRatePowerUpGuaranteedSpawn = false;
+                laserFireRatePowerUp.add(new FallingObjects.LaserFireRatePowerUp(fallingMeteorSpecialPowerUpTextureRegion,laserFireRateIncreaseTextureRegion,
+                        SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
+            }
+
+            if (fallingObjects.timeSinceLaserFireRatePowerUp > fallingObjects.laserFireRatePowerUpFrequency && playerShip.timeBetweenShots > 0.1f) {
+                laserFireRatePowerUp.add(new FallingObjects.LaserFireRatePowerUp(fallingMeteorSpecialPowerUpTextureRegion,laserFireRateIncreaseTextureRegion,
+                        SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
+                fallingObjects.timeSinceLaserFireRatePowerUp -= fallingObjects.laserFireRatePowerUpFrequency;
+                fallingObjects.laserFireRatePowerUpFrequency = SpaceShooterTestGame1.random.nextInt(60,75);
+            }
+
+            ListIterator<FallingObjects.LaserFireRatePowerUp> laserFireRatePowerUpListIterator = laserFireRatePowerUp.listIterator();
+            while (laserFireRatePowerUpListIterator.hasNext()) {
+                FallingObjects.LaserFireRatePowerUp lFRPU = laserFireRatePowerUpListIterator.next();
+                lFRPU.outerMeteor.boundingBox.y -= lFRPU.outerMeteor.fallingSpeed/1.5f*deltaTime;
+                if (lFRPU.outerMeteor.boundingBox.y + lFRPU.outerMeteor.boundingBox.height < 0) {
+                    laserFireRatePowerUpListIterator.remove();
+                }
+                lFRPU.draw(batch);
+            }
+        }
+        if (gameTime > 120) {
+            fallingObjects.timeSinceShieldRecoveryPowerUp += deltaTime;
+            if (fallingObjects.firstTimeShieldRecoveryPowerUpGuaranteedSpawn) {
+                fallingObjects.firstTimeShieldRecoveryPowerUpGuaranteedSpawn = false;
+                playerShieldRecoveryPowerUp.add(new FallingObjects.PlayerShieldRecovery(playerShieldRestoreTextureRegion,
+                        SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
+            }
+
+            if (fallingObjects.timeSinceShieldRecoveryPowerUp > fallingObjects.playerShieldRecoveryPowerUpFrequency) {
+                playerShieldRecoveryPowerUp.add(new FallingObjects.PlayerShieldRecovery(playerShieldRestoreTextureRegion,
+                        SpaceShooterTestGame1.random.nextFloat() * (WORLD_WIDTH - 10) + 5,WORLD_HEIGHT - 5));
+                fallingObjects.timeSinceShieldRecoveryPowerUp -= fallingObjects.playerShieldRecoveryPowerUpFrequency;
+                fallingObjects.playerShieldRecoveryPowerUpFrequency = SpaceShooterTestGame1.random.nextInt(60,90);
+            }
+
+            ListIterator<FallingObjects.PlayerShieldRecovery> playerShieldRecoveryListIterator = playerShieldRecoveryPowerUp.listIterator();
+            while (playerShieldRecoveryListIterator.hasNext()) {
+                FallingObjects.PlayerShieldRecovery pSR = playerShieldRecoveryListIterator.next();
+                pSR.outerMeteor.boundingBox.y -= pSR.outerMeteor.fallingSpeed/1.5f*deltaTime;
+                if (pSR.outerMeteor.boundingBox.y + pSR.outerMeteor.boundingBox.height < 0) {
+                    playerShieldRecoveryListIterator.remove();
+                }
+                pSR.draw(batch);
+            }
+        }
+//        if () { make it tag to a unique enemy instead, make the unique enemy faster than default ones
 //            playerShip.increaseMovementSpeedByTen();
 //        }
     }
@@ -292,12 +336,12 @@ class GameScreen implements Screen {
             enemySpawnTimer -= timeBetweenEnemySpawns;
         }
 
-        if (difficultyAdditionTimer > difficultyAdditionThreshold && timeBetweenEnemySpawns > 1) {
+        if (difficultyAdditionTimer > difficultyAdditionThreshold && timeBetweenEnemySpawns > 2) {
             timeBetweenEnemySpawns -= difficultyAddition;
             difficultyAdditionTimer -= difficultyAdditionThreshold;
         }
 
-        if (difficultySpawnTimer > difficultySpawnThreshold && difficultySpawnMultiplier < 3) {
+        if (difficultySpawnTimer > difficultySpawnThreshold && difficultySpawnMultiplier < 4) {
             difficultySpawnMultiplier++;
             difficultySpawnTimer -= difficultySpawnThreshold;
         }
@@ -383,7 +427,44 @@ class GameScreen implements Screen {
     }
 
     private void detectCollisions(){
-        //collision with power-up meteors
+        //collision with shield recovery power up
+        ListIterator<FallingObjects.PlayerShieldRecovery> playerShieldRecoveryListIterator = playerShieldRecoveryPowerUp.listIterator();
+        while (playerShieldRecoveryListIterator.hasNext()) {
+            FallingObjects.PlayerShieldRecovery pSR = playerShieldRecoveryListIterator.next();
+            if (playerShip.intersects(pSR.outerMeteor.boundingBox)) {
+                playerShip.restoreShieldByTwo();
+                playerShieldRecoveryListIterator.remove();
+            }
+        }
+
+        //collision with power-up meteors (fire rate)
+        ListIterator<FallingObjects.LaserFireRatePowerUp> laserFireRatePowerUpListIterator = laserFireRatePowerUp.listIterator();
+        while (laserFireRatePowerUpListIterator.hasNext()) {
+            FallingObjects.LaserFireRatePowerUp lFRPU = laserFireRatePowerUpListIterator.next();
+            if (playerShip.intersects(lFRPU.outerMeteor.boundingBox) && lFRPU.outerMeteor.fallingMeteorHP > 2) {
+                if (playerShip.hitAndCheckDestroyedByMeteors()){
+                    explosionList.add(new Explosion(explosionTexture, new Rectangle(playerShip.boundingBox),5f));
+                    //TODO add game over screen, enlarge explosions maybe (by adding boundingBox the size of mars
+                }
+                laserFireRatePowerUpListIterator.remove();
+            } else if (playerShip.intersects(lFRPU.outerMeteor.boundingBox) && lFRPU.outerMeteor.fallingMeteorHP < 3) {
+                playerShip.increaseFireRate();
+                laserFireRatePowerUpListIterator.remove();
+            }
+
+            ListIterator<Laser> laserListIterator = playerLaserList.listIterator();
+            while(laserListIterator.hasNext()) {
+                Laser laser = laserListIterator.next();
+                if (lFRPU.outerMeteor.boundingBox.overlaps(laser.boundingBox) && lFRPU.outerMeteor.fallingMeteorHP > 2) {
+                    lFRPU.outerMeteor.fallingMeteorHP--;
+                    lFRPU.checkIfMeteorDamaged();
+                    laserListIterator.remove();
+                    break;
+                }
+            }
+        }
+
+        //collision with power-up meteors (additional laser)
         ListIterator<FallingObjects.AdditionalLaserPowerUp> additionalLaserPowerUpListIterator = additionalLaserPowerUp.listIterator();
         while (additionalLaserPowerUpListIterator.hasNext()) {
             FallingObjects.AdditionalLaserPowerUp aLPU = additionalLaserPowerUpListIterator.next();
@@ -401,7 +482,7 @@ class GameScreen implements Screen {
             ListIterator<Laser> laserListIterator = playerLaserList.listIterator();
             while(laserListIterator.hasNext()) {
                 Laser laser = laserListIterator.next();
-                if (aLPU.outerMeteor.boundingBox.overlaps(laser.boundingBox)) {
+                if (aLPU.outerMeteor.boundingBox.overlaps(laser.boundingBox) && aLPU.outerMeteor.fallingMeteorHP > 2) {
                     aLPU.outerMeteor.fallingMeteorHP--;
                     aLPU.checkIfMeteorDamaged();
                     laserListIterator.remove();
@@ -429,12 +510,13 @@ class GameScreen implements Screen {
                 Laser laser = laserListIterator.next();
                 if (meteors.outerMeteor.boundingBox.overlaps(laser.boundingBox)) {
                     meteors.outerMeteor.fallingMeteorHP--;
-                        if(meteors.hitAndCheckDestroyed()){
-                            fallingMeteorsListIterator.remove();
-                            score += 100;
-                        }
-                        laserListIterator.remove();
-                        break;
+
+                    if(meteors.hitAndCheckDestroyed()){
+                        fallingMeteorsListIterator.remove();
+                        score += 500;
+                    }
+                    laserListIterator.remove();
+                    break;
                     }
             }
         }

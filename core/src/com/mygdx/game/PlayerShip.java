@@ -18,12 +18,12 @@ class PlayerShip extends Ship{
         return playerPowerLevel;
     }
 
-    public void restoreShieldToTen() {
-        shield = 10;
+    public void restoreShieldByTwo() {
+        shield += 2;
     }
 
     public void increaseFireRate() {
-        if (timeBetweenShots > 0.05f) {
+        if (timeBetweenShots > 0.1f) {
             timeBetweenShots -= 0.1f;
         }
     }
