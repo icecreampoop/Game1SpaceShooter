@@ -71,8 +71,14 @@ class GameScreen implements Screen {
     private int score = 0;
 
     //Heads-Up Display
-    BitmapFont font;
+    BitmapFont font, powerUpFont, tempDisplayFont1, tempDisplayFont2, tempDisplayFont3, tempDisplayFont4, tempDisplayFont5;
     float hudVerticalMargin, hudLeftX,hudRightX,hudCentreX,hudRow1Y,hudRow2Y,hudSectionWidth;
+    boolean tempScoreDisplayCheck, tempFireRateDisplayCheck, tempLaserDisplayCheck;
+    float temporaryScoreDisplayTimer, fireRateBlinkEffectTimer = 0, tempFireRateDisplayTimer,
+            laserBlinkEffectTimer = 0, tempLaserDisplayTimer;
+    String temporaryDisplayMessage = "+500";
+    FreeTypeFontGenerator tempFontGenerator;
+    FreeTypeFontGenerator.FreeTypeFontParameter tempFontParameter;
 
     GameScreen() {
         camera = new OrthographicCamera();
@@ -132,6 +138,38 @@ class GameScreen implements Screen {
 
         prepareHUD();
 
+        //prepare temp font
+        tempFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("EdgeOfTheGalaxyRegular-OVEa6.otf"));
+        tempFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        tempFontParameter.size = 55;
+        tempFontParameter.borderWidth = 3.6f;
+        tempFontParameter.color = Color.WHITE;
+        tempFontParameter.borderColor = Color.GRAY;
+
+        tempDisplayFont1 = tempFontGenerator.generateFont(tempFontParameter);
+        tempDisplayFont2 = tempFontGenerator.generateFont(tempFontParameter);
+        tempDisplayFont3 = tempFontGenerator.generateFont(tempFontParameter);
+        tempDisplayFont4 = tempFontGenerator.generateFont(tempFontParameter);
+        tempDisplayFont5 = tempFontGenerator.generateFont(tempFontParameter);
+        Color color = tempDisplayFont1.getColor();
+
+        //scale the font to fit world
+        tempDisplayFont1.getData().setScale(0.08f);
+        tempDisplayFont2.getData().setScale(0.08f);
+        tempDisplayFont3.getData().setScale(0.08f);
+        tempDisplayFont4.getData().setScale(0.08f);
+        tempDisplayFont5.getData().setScale(0.08f);
+
+        color.a = 0.8f;
+        tempDisplayFont2.setColor(color);
+        color.a = 0.6f;
+        tempDisplayFont3.setColor(color);
+        color.a = 0.4f;
+        tempDisplayFont4.setColor(color);
+        color.a = 0.2f;
+        tempDisplayFont5.setColor(color);
+
+
     }
 
     private void prepareHUD() {
@@ -146,8 +184,12 @@ class GameScreen implements Screen {
 
         font = fontGenerator.generateFont(fontParameter);
 
+        fontParameter.color.set(Color.TEAL);
+        powerUpFont = fontGenerator.generateFont(fontParameter);
+
         //scale the font to fit world
         font.getData().setScale(0.08f);
+        powerUpFont.getData().setScale(0.08f);
 
         //calculate hud margins, etc.
         hudVerticalMargin = font.getCapHeight()/2;
@@ -196,6 +238,11 @@ class GameScreen implements Screen {
 
         //hud rendering
         updateAndRenderHUD(deltaTime);
+
+        //score display when meteor is destroyed (and other stuff)
+        temporaryDisplay(deltaTime,temporaryDisplayMessage, tempScoreDisplayCheck,playerShip.boundingBox.x - playerShip.boundingBox.width/2,
+                playerShip.boundingBox.y + playerShip.boundingBox.height/5);
+
 
         batch.end();
     }
@@ -426,6 +473,54 @@ class GameScreen implements Screen {
         enemyShip.translate(xMove,yMove);
     }
 
+    private void temporaryDisplay(float deltaTime,String temporaryDisplayMessage,boolean scoreDisplayCheck, float xCoordinate, float yCoordinate) {
+        //caveman method of fading effect for meteor points
+        if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer < 0.2f){
+            tempDisplayFont1.draw(batch,temporaryDisplayMessage,xCoordinate,yCoordinate);
+        } else if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer < 0.4f) {
+            tempDisplayFont2.draw(batch,temporaryDisplayMessage,xCoordinate,yCoordinate);
+        } else if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer < 0.6f) {
+            tempDisplayFont3.draw(batch,temporaryDisplayMessage,xCoordinate,yCoordinate);
+        } else if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer < 0.8f) {
+            tempDisplayFont4.draw(batch,temporaryDisplayMessage,xCoordinate,yCoordinate);
+        } else if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer < 1f) {
+            tempDisplayFont5.draw(batch,temporaryDisplayMessage,xCoordinate,yCoordinate);
+        } else if (scoreDisplayCheck && gameTime - temporaryScoreDisplayTimer > 1f){
+            tempScoreDisplayCheck = false;
+            temporaryScoreDisplayTimer = 0;
+        }
+
+        //fire rate power up display effect
+        if (tempFireRateDisplayCheck){
+            fireRateBlinkEffectTimer += deltaTime;
+            if (fireRateBlinkEffectTimer > 0 && fireRateBlinkEffectTimer < 0.7f) {
+                powerUpFont.draw(batch, "F i r e-R a t e", WORLD_WIDTH / 2, WORLD_HEIGHT / 20 * 11, 0, Align.center, false);
+                powerUpFont.draw(batch, "U P", WORLD_WIDTH / 2, WORLD_HEIGHT / 20 * 10, 0, Align.center, false);
+            } else if (fireRateBlinkEffectTimer > 1.3f) {
+                fireRateBlinkEffectTimer = 0;
+            }
+
+            if (tempFireRateDisplayCheck && gameTime - tempFireRateDisplayTimer > 5) {
+                tempFireRateDisplayCheck = false;
+            }
+        }
+
+        //laser power up display effect
+        if (tempLaserDisplayCheck){
+            laserBlinkEffectTimer += deltaTime;
+            if (laserBlinkEffectTimer > 0 && laserBlinkEffectTimer < 0.7f) {
+                powerUpFont.draw(batch, "X T R A L A S E R", WORLD_WIDTH / 2, WORLD_HEIGHT / 30 * 16, 0, Align.center, false);
+            } else if (laserBlinkEffectTimer > 1.3f) {
+                laserBlinkEffectTimer = 0;
+            }
+
+            if (tempLaserDisplayCheck && gameTime - tempLaserDisplayTimer > 5) {
+                tempLaserDisplayCheck = false;
+            }
+        }
+
+    }
+
     private void detectCollisions(){
         //collision with shield recovery power up
         ListIterator<FallingObjects.PlayerShieldRecovery> playerShieldRecoveryListIterator = playerShieldRecoveryPowerUp.listIterator();
@@ -449,6 +544,8 @@ class GameScreen implements Screen {
                 laserFireRatePowerUpListIterator.remove();
             } else if (playerShip.intersects(lFRPU.outerMeteor.boundingBox) && lFRPU.outerMeteor.fallingMeteorHP < 3) {
                 playerShip.increaseFireRate();
+                tempFireRateDisplayCheck = true;
+                tempFireRateDisplayTimer = gameTime;
                 laserFireRatePowerUpListIterator.remove();
             }
 
@@ -476,6 +573,8 @@ class GameScreen implements Screen {
                 additionalLaserPowerUpListIterator.remove();
             } else if (playerShip.intersects(aLPU.outerMeteor.boundingBox) && aLPU.outerMeteor.fallingMeteorHP < 3) {
                 playerShip.increaseNumberOfLasers();
+                tempLaserDisplayCheck = true;
+                tempLaserDisplayTimer = gameTime;
                 additionalLaserPowerUpListIterator.remove();
             }
 
@@ -513,6 +612,8 @@ class GameScreen implements Screen {
 
                     if(meteors.hitAndCheckDestroyed()){
                         fallingMeteorsListIterator.remove();
+                        tempScoreDisplayCheck = true;
+                        temporaryScoreDisplayTimer = gameTime;
                         score += 500;
                     }
                     laserListIterator.remove();
@@ -549,7 +650,7 @@ class GameScreen implements Screen {
                 //contact with player ship
                 if (playerShip.hitAndCheckDestroyed()){
                     explosionList.add(new Explosion(explosionTexture, new Rectangle(playerShip.boundingBox),5f));
-                    playerShip.shield = 10;
+                    playerShip.shield = 5;
                     //TODO add game over screen, enlarge explosions maybe (by adding boundingBox the size of mars
                 }
                 laserListIterator.remove();

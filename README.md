@@ -6,3 +6,4 @@ Link to original tutorial: https://www.youtube.com/watch?v=nXeJImLSZug&list=PLfd
 Noteworthy Additions:
 1) Meteors
 2) Power-Ups (Additional Laser, Faster Firing Speed, Shield Recovery)
+3) Polished Game Stuff (Additional HUD Stuff, Simple Effects)
